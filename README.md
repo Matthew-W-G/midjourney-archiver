@@ -8,7 +8,7 @@ Stores and downloads Midjourney-generated images alongside given prompts.
 1. **Clone the Repository**:
 
     ```bash
-    git clone https://github.com/yourusername/midjourney-archiver.git
+    git clone https://github.com/matthew-w-g/midjourney-archiver.git
     cd midjourney-archiver
     ```
 
