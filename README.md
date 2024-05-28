@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Midjourney Archiver
 
 ## Description
@@ -25,3 +26,7 @@ Stores and downloads Midjourney-generated images alongside given prompts.
     ```bash
     ./run_script.sh
     ```
+=======
+# midjourney-archiver
+Stores and downloads Midjourney-generated images alongside given prompts.
+>>>>>>> 7a4cabc927b823424f2b3663a52f1cd57824a36d
