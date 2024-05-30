@@ -4,19 +4,29 @@ import pandas as pd
 import os
 import requests
 import json
+import sys
+
+if len(sys.argv) != 2:
+    print("Usage: python archiveScraper.py <limit>")
+    sys.exit(1)
+
+# Get the limit from the command-line arguments
+try:
+    limit = int(sys.argv[1])
+except ValueError:
+    print("The limit must be an integer.")
+    sys.exit(1)
 
 def load_ids():
     mj_folder = os.path.join(os.path.expanduser('~'), 'Desktop', 'midjourney_archive')
     ids_file = os.path.join(mj_folder, 'ids.json')
-    if(os.path.exists(ids_file)):
+    if os.path.exists(ids_file):
         with open(ids_file, 'r') as file:
-            if(file.read(1)):
-                return set(json.load(file))
-            else:
-                return set()
+            ids = json.load(file)
+        return set(ids)
+
     else:
-        with open(ids_file, 'a'):
-            return set()
+        return set()
 
 seen_ids = load_ids()
 
@@ -32,6 +42,7 @@ def load_cookies(context, cookies_file):
         context.add_cookies(validated_cookies)
 
 def fetch_archive_page():
+    global seen_ids
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         context = browser.new_context()
@@ -54,7 +65,12 @@ def fetch_archive_page():
         for img in images:
             href = img.get_attribute('href')
             if href and href.startswith('/jobs/'):
-                job_urls.append(href)
+                parts = href.split('/')
+                id = parts[2].split('?')[0]
+                print('id', id)
+                print(seen_ids)
+                if(id not in seen_ids):
+                    job_urls.append(href)
 
         df = compile_image_data(page, job_urls, context)
         browser.close()
@@ -86,7 +102,6 @@ def compile_image_data(page, job_urls, context):
     image_df = pd.DataFrame(columns=['id','prompt','url','download_path'])
 
     storage_folder = get_downloads_folder()
-    print(f"Storage folder: {storage_folder}")
     
     # Get the cookies from the context
     cookies = context.cookies()
@@ -95,20 +110,14 @@ def compile_image_data(page, job_urls, context):
     # Get the headers from the context
     headers = page.evaluate("() => { return { 'User-Agent': navigator.userAgent } }")
 
-    i = 0
-    for job_url in job_urls:
-        if(i > 10):
+    global limit
+    global seen_ids
+    for i, job_url in enumerate(job_urls):
+        if(i > limit):
             break
-        i += 1
         parts = job_url.split('/')
         id = parts[2].split('?')[0]
-        print(id)
-        global seen_ids
-        if(id in seen_ids):
-            continue
-        else:
-            seen_ids.add(id)
-
+        seen_ids.add(id)
         image_url = 'https://www.midjourney.com' + job_url
         page.goto(image_url)
         page.wait_for_load_state('networkidle')
@@ -141,10 +150,18 @@ def compile_image_data(page, job_urls, context):
     return image_df
 
 def save_ids():
+    global seen_ids
     mj_folder = os.path.join(os.path.expanduser('~'), 'Desktop', 'midjourney_archive')
     ids_file = os.path.join(mj_folder, 'ids.json')
     with open(ids_file, 'w') as file:
         json.dump(list(seen_ids), file)
+
+
+
+# add date and tag(s) column
+# add small interval
+# add max download param
+# add to excel file instead of rewriting
 
 if __name__ == '__main__':
     mj_folder = os.path.join(os.path.expanduser('~'), 'Desktop', 'midjourney_archive')
@@ -162,6 +179,5 @@ if __name__ == '__main__':
     pd.set_option('display.max_colwidth', None)
     new_rows = fetch_archive_page()
     archive_df = pd.concat([archive_df, new_rows], ignore_index=False)
-    print(archive_df)
     archive_df.to_excel(excel_path)
     save_ids()

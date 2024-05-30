@@ -20,8 +20,20 @@ python3 -m pip install -r requirements.txt
 # List installed packages
 python3 -m pip list
 
+#Install playwright browsers
+python -m playwright install
+
+# Check if the variable is passed as an argument
+if [ -z "$1" ]; then
+  echo "Usage: $0 <variable>"
+  exit 1
+fi
+
+# assign first argument to limit var
+LIMIT=$1
+
 # Run the Python script
-python3 archiveScraper.py
+python3 archiveScraper.py "$LIMIT"
 
 # Deactivate the virtual environment
 deactivate
