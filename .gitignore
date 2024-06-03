@@ -1,5 +1,8 @@
-myenv/
-
 .DS_Store
+myenv/
 cookies.json
 debug.log
+__pycache__/
+*.py[cod]
+*.pyc
+.env

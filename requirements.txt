@@ -1,4 +1,8 @@
 playwright
 pandas
 requests
-openpyxl
+flask
+flask_sqlalchemy
+flask_migrate
+psycopg2
+python-dotenv

@@ -17,9 +17,13 @@ Stores and downloads Midjourney-generated images alongside given prompts.
 
 3. **Set Up Cookies**:
     - Log in to the Midjourney website, navigate to the archive section, and open the cookie extension.
-    - Copy the cookie data and paste it into `cookies.json`.
+    - Copy the cookie data and paste it into a new file `cookies.json` inside of src/scripts/
 
-4. **Run the Script**:
+4. **Set Up ENV file**:
+    - Create new .env file in root directory
+    - Set variable DOWNLOAD_FOLDER to absolute path of where you want to save images
+
+5. **Run the Script**:
     - Run the script:
 
     ```bash
