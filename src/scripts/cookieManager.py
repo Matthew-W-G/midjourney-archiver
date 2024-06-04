@@ -14,3 +14,9 @@ class CookieManager:
             cookies = json.load(file)
             validated_cookies = [self.validate_cookie(cookie) for cookie in cookies]
             context.add_cookies(validated_cookies)
+
+    def save_cookies(self, context):
+        cookies = context.cookies()
+        cookies_file = os.path.join(os.path.dirname(__file__), 'cookies.json')
+        with open(cookies_file, 'w') as file:
+            json.dump(cookies, file)

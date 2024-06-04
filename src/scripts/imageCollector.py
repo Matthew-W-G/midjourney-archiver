@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 from cookieManager import CookieManager
 from imageScraper import ImageScraper
+import os
 
 class ImageCollector:
     def __init__(self, limit):
@@ -40,6 +41,22 @@ class ImageCollector:
             print(f"Error clicking filter buttons: {e}")
             return []
 
+    def make_images_small(self, page):
+        try:
+            page.click('button:has-text("View Options")')
+            print("Clicked Options button.")
+            time.sleep(1)  # Wait for the options menu to expand
+
+            # Wait for the Upscales button to be visible and click it
+            page.wait_for_selector('button:has-text("Small")', state='visible', timeout=60000)
+            page.click('button:has-text("Small")')
+            print("Clicked Upscales button.")
+            time.sleep(1)  # Wait for the page to update
+
+        except Exception as e:
+            print(f"Error clicking small buttons: {e}")
+            return []
+        
     def launch_archive_page(self):
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False)
@@ -47,19 +64,32 @@ class ImageCollector:
                 permissions=['clipboard-read', 'clipboard-write'],
                 ignore_https_errors=True
             )
-            # Load cookies to bypass logic
+
             cookie_manager = CookieManager()
-            cookie_manager.load_cookies(context)
-            
+            cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
+
             page = context.new_page()
             page.goto('https://www.midjourney.com/archive')
-            
+
+            if os.path.exists(cookies_file_path):
+                # Load cookies if the file exists
+                cookie_manager.load_cookies(context)
+                # Reload the page with cookies
+                page.reload()
+            else:
+                # Perform manual login here and wait for it to complete
+                input("Complete the login process and press Enter...")
+
+                # Save cookies after login
+                cookie_manager.save_cookies(context)
+
             # Wait for Cloudflare challenge to complete (if any)
-            page.wait_for_timeout(4000)  # Wait 1 second for the challenge to complete
+            page.wait_for_timeout(4000)  # Wait 4 seconds for the challenge to complete
             
             print("Reached MidJourney archive page. Extracting images and information...")
             
             self.filter_upscale_only(page)
+            self.make_images_small(page)
 
             # Extract images and associated information
             job_urls = self.get_all_new_jobs(page)
