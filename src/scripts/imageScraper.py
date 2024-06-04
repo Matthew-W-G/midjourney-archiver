@@ -101,7 +101,7 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path)
-            time.sleep(random.uniform(0.5, 0.25))
+            time.sleep(random.uniform(1, 1.75))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):

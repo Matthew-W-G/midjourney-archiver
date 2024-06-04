@@ -58,44 +58,43 @@ class ImageCollector:
             return []
         
     def launch_archive_page(self):
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False)
-            context = browser.new_context(
-                permissions=['clipboard-read', 'clipboard-write'],
-                ignore_https_errors=True
-            )
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=False)
+                context = browser.new_context(
+                    permissions=['clipboard-read', 'clipboard-write'],
+                    ignore_https_errors=True
+                )
 
-            cookie_manager = CookieManager()
-            cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
+                cookie_manager = CookieManager()
+                cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
 
-            page = context.new_page()
-            page.goto('https://www.midjourney.com/archive')
-
-            if os.path.exists(cookies_file_path):
-                # Load cookies if the file exists
+                # Always filter and add only the desired cookies
                 cookie_manager.load_cookies(context)
-                # Reload the page with cookies
-                page.reload()
-            else:
-                # Perform manual login here and wait for it to complete
-                input("Complete the login process and press Enter...")
+                
+                page = context.new_page()
+                page.goto('https://www.midjourney.com/archive')
+                page.wait_for_timeout(4000)
 
-                # Save cookies after login
-                cookie_manager.save_cookies(context)
+                if not os.path.exists(cookies_file_path):
+                    input("Complete the login process and press Enter...")
+                    # Save cookies after initial login
+                    cookie_manager.save_cookies(context)
+                    # Reload the filtered cookies to ensure only desired cookies are used
+                    context.clear_cookies()
+                    cookie_manager.load_cookies(context)
+                
+                page = context.new_page()
+                page.goto('https://www.midjourney.com/archive')
+                page.wait_for_timeout(4000)
 
-            # Wait for Cloudflare challenge to complete (if any)
-            page.wait_for_timeout(4000)  # Wait 4 seconds for the challenge to complete
-            
-            print("Reached MidJourney archive page. Extracting images and information...")
-            
-            self.filter_upscale_only(page)
-            self.make_images_small(page)
+                print("Reached MidJourney archive page. Extracting images and information...")
+                self.filter_upscale_only(page)
+                self.make_images_small(page)
 
-            # Extract images and associated information
-            job_urls = self.get_all_new_jobs(page)
-            image_scraper = ImageScraper(self.limit)
-            image_scraper.compile_image_data(page, job_urls, context)
-            browser.close()
+                job_urls = self.get_all_new_jobs(page)
+                image_scraper = ImageScraper(self.limit)
+                image_scraper.compile_image_data(page, job_urls, context)
+                browser.close()
     
     def get_all_new_jobs(self, page):  
         new_jobs_urls = []
