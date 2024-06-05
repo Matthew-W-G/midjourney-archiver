@@ -129,7 +129,7 @@ class ImageCollector:
 
             # Scroll down
             page.keyboard.press('ArrowDown')
-            time.sleep(.005)
+            time.sleep(.001)
         seen = set()
         unique_urls = [x for x in new_jobs_urls if not (x in seen or seen.add(x))]
         return unique_urls
