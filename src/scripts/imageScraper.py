@@ -50,6 +50,51 @@ class ImageScraper:
             return None
         
     @staticmethod
+    def create_subtle_upscale(page):
+        # Find the first instance of the specified class
+        element = page.query_selector("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
+
+        # Check if the element is found
+        if element:
+            # Attempt to click the first button inside the element
+            first_button = element.query_selector("button")
+            
+            if first_button:
+                try:
+                    first_button.click()
+                    print("First button inside the element was clicked.")
+                    
+                    # Check for the presence of the message using a more generic selector and text content
+                    page.wait_for_timeout(1000)  # wait a moment to allow potential message to appear
+                    message_elements = page.query_selector_all("p")
+                    for message_element in message_elements:
+                        if "You have no fast hours left. Please purchase more to continue submitting jobs or change your generation speed to relax." in message_element.inner_text():
+                            raise RuntimeError("Fast hours exceeded message found.")
+                    
+                except Exception as e:
+                    print(f"Failed to click the first button: {e}")
+                    raise
+            else:
+                print("No button found inside the element.")
+                raise RuntimeError("No button found inside the element.")
+        else:
+            print("Element not found.")
+            raise RuntimeError("Element not found.")
+
+    @staticmethod
+    def get_enhancement_level(page):
+        element = page.query_selector_all("span.block.relative.truncate")
+        if element:
+            text_content = element[0].inner_text()
+            if "Upscale (S)" in text_content:
+                return "Upscale - Subtle"
+            elif "Upscale" in text_content:
+                return "Upscale"
+            else:
+                return "Other"
+        return "No matching element found"
+        
+    @staticmethod
     def download_image(image_url, save_path, headers, cookies):
         try:
             print(f"Downloading image from: {image_url}")
@@ -85,6 +130,8 @@ class ImageScraper:
 
             page.wait_for_load_state('networkidle')
 
+            quality = self.get_enhancement_level(page)
+            self.create_subtle_upscale(page)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
@@ -99,7 +146,7 @@ class ImageScraper:
                 img_path = os.path.join(storage_folder, f'{id}.jpeg')
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
-            self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path)
+            self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
             time.sleep(random.uniform(.75, 1.5))
 
     def get_downloads_folder(self):
@@ -109,7 +156,7 @@ class ImageScraper:
             
 
 
-    def add_image_to_db(self, image_id, prompt_date, prompt_text, url, download_path):
-        new_image = Image(image_id=image_id, prompt_date=prompt_date, prompt_text=prompt_text, url=url, download_path=download_path)
+    def add_image_to_db(self, image_id, prompt_date, prompt_text, url, download_path, quality):
+        new_image = Image(image_id=image_id, prompt_date=prompt_date, prompt_text=prompt_text, url=url, download_path=download_path, enhancement_level=quality)
         db.session.add(new_image)
         db.session.commit()

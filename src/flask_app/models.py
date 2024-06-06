@@ -7,3 +7,4 @@ class Image(db.Model):
     prompt_text = db.Column(db.Text, nullable=True) 
     url = db.Column(db.Text)
     download_path = db.Column(db.Text)
+    enhancement_level = db.Column(db.Text)

@@ -165,7 +165,6 @@ class ImageCollector:
     def navigate_archive_page(self, page):  
         self.go_to_starting_point(page)
         new_jobs = self.get_new_jobs(page)
-        print(new_jobs)
         if(len(new_jobs) > 0):
             new_jobs.reverse()
         return new_jobs
