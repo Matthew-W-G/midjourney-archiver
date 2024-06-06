@@ -51,18 +51,21 @@ class ImageScraper:
         
     @staticmethod
     def create_subtle_upscale(page):
-        # Find the first instance of the specified class
-        element = page.query_selector("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
+        # Find all instances of the specified class
+        elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
 
-        # Check if the element is found
-        if element:
-            # Attempt to click the first button inside the element
+        # Check if at least two elements are found
+        if len(elements) > 1:
+            # Select the second element
+            element = elements[1]
+
+            # Attempt to click the first button inside the second element
             first_button = element.query_selector("button")
             
             if first_button:
                 try:
                     first_button.click()
-                    print("First button inside the element was clicked.")
+                    print("First button inside the second element was clicked.")
                     
                     # Check for the presence of the message using a more generic selector and text content
                     page.wait_for_timeout(1000)  # wait a moment to allow potential message to appear
@@ -75,11 +78,11 @@ class ImageScraper:
                     print(f"Failed to click the first button: {e}")
                     raise
             else:
-                print("No button found inside the element.")
-                raise RuntimeError("No button found inside the element.")
+                print("No button found inside the second element.")
+                raise RuntimeError("No button found inside the second element.")
         else:
-            print("Element not found.")
-            raise RuntimeError("Element not found.")
+            print("Less than two elements found.")
+            raise RuntimeError("Less than two elements found.")
 
     @staticmethod
     def get_enhancement_level(page):
@@ -126,8 +129,8 @@ class ImageScraper:
             page.wait_for_load_state('networkidle')
 
             quality = self.get_enhancement_level(page)
-            #if(quality=='Upscale'):
-                #self.create_subtle_upscale(page)
+            if(quality=='Upscale'):
+                self.create_subtle_upscale(page)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
