@@ -7,9 +7,8 @@ from flask_app.models import Image
 from datetime import datetime
 
 class ImageScraper:
-    def __init__(self, limit):
+    def __init__(self):
         self.download_folder = os.getenv('DOWNLOAD_FOLDER')
-        self.limit = limit
 
 
     @staticmethod
@@ -77,14 +76,11 @@ class ImageScraper:
         # Get the headers from the context
         headers = page.evaluate("() => { return { 'User-Agent': navigator.userAgent } }")
 
-        for i, job_url in enumerate(job_urls):
-            if(i >= self.limit):
-                break
-            
+        for job_url in job_urls:
             image_url = 'https://www.midjourney.com' + job_url
             page.goto(image_url)
-            page.wait_for_load_state('networkidle')
 
+            page.wait_for_load_state('networkidle')
 
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
@@ -101,7 +97,7 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path)
-            time.sleep(random.uniform(1, 1.75))
+            time.sleep(random.uniform(.75, 1.5))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
