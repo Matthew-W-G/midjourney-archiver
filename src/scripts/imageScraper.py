@@ -42,7 +42,7 @@ class ImageScraper:
             date_str_with_year = f"{date_str} {current_year}"
             
             # Convert the string to a datetime object
-            date_obj = datetime.strptime(date_str_with_year, "%d %B, %I:%M %p %Y")
+            date_obj = datetime.strptime(date_str_with_year, os.getenv('DATE_FORMAT'))
             print(f"Converted date object: {date_obj}")
             return date_obj
         else:
@@ -131,7 +131,8 @@ class ImageScraper:
             page.wait_for_load_state('networkidle')
 
             quality = self.get_enhancement_level(page)
-            self.create_subtle_upscale(page)
+            if(quality=='Upscale'):
+                self.create_subtle_upscale(page)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
