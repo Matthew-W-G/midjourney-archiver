@@ -2,9 +2,12 @@ import time
 import requests
 import random
 import os
+from dotenv import load_dotenv
 from flask_app import db
 from flask_app.models import Image
 from datetime import datetime
+
+load_dotenv()
 
 class ImageScraper:
     def __init__(self):
