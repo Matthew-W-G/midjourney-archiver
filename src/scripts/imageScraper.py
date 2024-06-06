@@ -86,12 +86,7 @@ class ImageScraper:
         element = page.query_selector_all("span.block.relative.truncate")
         if element:
             text_content = element[0].inner_text()
-            if "Upscale (S)" in text_content:
-                return "Upscale - Subtle"
-            elif "Upscale" in text_content:
-                return "Upscale"
-            else:
-                return "Other"
+            return text_content
         return "No matching element found"
         
     @staticmethod
@@ -131,8 +126,8 @@ class ImageScraper:
             page.wait_for_load_state('networkidle')
 
             quality = self.get_enhancement_level(page)
-            if(quality=='Upscale'):
-                self.create_subtle_upscale(page)
+            #if(quality=='Upscale'):
+                #self.create_subtle_upscale(page)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
