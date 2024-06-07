@@ -64,14 +64,11 @@ class ImageScraper:
             if first_button:
                 try:
                     first_button.click()
-                    print("First button inside the second element was clicked.")
-                    
-                    # Wait for 1 second to see if the indicator remains
                     page.wait_for_timeout(1000)  # Wait 1 second
+                    indicator = first_button.query_selector("span")
+                    print(indicator)
 
-                    # Check if the span with the number 1 is still present
-                    indicator = first_button.query_selector("span.absolute")
-                    if indicator and len(indicator.inner_text().strip()) >= 1:
+                    if indicator and indicator.inner_text().strip() == "1":
                         print("Image generation was successful. Indicator is still present.")
                         return True  # Indicate success
                     elif(first_try):
@@ -166,4 +163,4 @@ class ImageScraper:
     def add_image_to_db(self, image_id, prompt_date, prompt_text, url, download_path, quality):
         new_image = Image(image_id=image_id, prompt_date=prompt_date, prompt_text=prompt_text, url=url, download_path=download_path, enhancement_level=quality)
         db.session.add(new_image)
-        db.session.commit()()
+        db.session.commit()
