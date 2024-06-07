@@ -49,8 +49,7 @@ class ImageScraper:
             print("Date element not found")
             return None
         
-    @staticmethod
-    def create_subtle_upscale(page):
+    def create_subtle_upscale(self, page, first_try):
         # Find all instances of the specified class
         elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
 
@@ -67,13 +66,22 @@ class ImageScraper:
                     first_button.click()
                     print("First button inside the second element was clicked.")
                     
-                    # Check for the presence of the message using a more generic selector and text content
-                    page.wait_for_timeout(1000)  # wait a moment to allow potential message to appear
-                    message_elements = page.query_selector_all("p")
-                    for message_element in message_elements:
-                        if "You have no fast hours left. Please purchase more to continue submitting jobs or change your generation speed to relax." in message_element.inner_text():
-                            raise RuntimeError("Fast hours exceeded message found.")
-                    
+                    # Wait for 1 second to see if the indicator remains
+                    page.wait_for_timeout(1000)  # Wait 1 second
+
+                    # Check if the span with the number 1 is still present
+                    indicator = first_button.query_selector("span.absolute")
+                    if indicator and len(indicator.inner_text().strip()) >= 1:
+                        print("Image generation was successful. Indicator is still present.")
+                        return True  # Indicate success
+                    elif(first_try):
+                        first_try = False
+                        page.wait_for_timeout(10000)  # Wait 10 seconds
+                        self.create_subtle_upscale(page, False)
+                    else:
+                        print("Limit reached.")
+                        raise RuntimeError("Limit reached.")
+
                 except Exception as e:
                     print(f"Failed to click the first button: {e}")
                     raise
@@ -130,7 +138,7 @@ class ImageScraper:
 
             quality = self.get_enhancement_level(page)
             if(quality=='Upscale'):
-                self.create_subtle_upscale(page)
+                self.create_subtle_upscale(page, True)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
@@ -146,7 +154,7 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
-            time.sleep(random.uniform(.75, 1.5))
+            time.sleep(random.uniform(2, 3))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
@@ -158,4 +166,4 @@ class ImageScraper:
     def add_image_to_db(self, image_id, prompt_date, prompt_text, url, download_path, quality):
         new_image = Image(image_id=image_id, prompt_date=prompt_date, prompt_text=prompt_text, url=url, download_path=download_path, enhancement_level=quality)
         db.session.add(new_image)
-        db.session.commit()
+        db.session.commit()()
