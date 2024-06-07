@@ -66,15 +66,20 @@ class ImageScraper:
                     first_button.click()
                     print("First button inside the second element was clicked.")
                     
-                    try:
-                        # Wait for up to 2 seconds for the indicator to appear
-                        page.wait_for_selector("button span.absolute", timeout=2000)
-                    except:
-                        print("Indicator did not appear within 2 seconds.")
-                
-                    # Check if the span with the number 1 is still present inside the clicked button
+                    # Wait for the indicator span to appear and have the text "1"
+                    page.wait_for_function("""
+                        (button) => {
+                            const span = button.querySelector('span.absolute');
+                            return span && span.innerText.trim() === '1';
+                        }
+                    """, first_button, timeout=5000)
+                    print("Waited for the indicator span to appear.")
+                    
+                    # Check for the indicator span inside the clicked button
                     indicator = first_button.query_selector("span.absolute")
-                    if indicator and indicator.inner_text().strip() == "1":
+                    print(f"Indicator element after wait: {indicator}")
+
+                    if indicator and  indicator.inner_text().strip() == "1":
                         print("Image generation was successful. Indicator is still present.")
                         return True  # Indicate success
                     elif(first_try):
