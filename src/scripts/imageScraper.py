@@ -61,7 +61,7 @@ class ImageScraper:
 
                 if subtle_button:
                     subtle_button.click()
-                    page.wait_for_timeout(1000)  # Wait 1 second
+                    page.wait_for_timeout(1500)  # Wait 1 second
                     updated_subtle_button = element.query_selector("button")
                     print(updated_subtle_button)
                     span = updated_subtle_button.query_selector("span")
@@ -131,7 +131,8 @@ class ImageScraper:
             page.wait_for_load_state('networkidle')
 
             quality = self.get_enhancement_level(page)
-            if(quality=='Upscale'):
+            print('quality', quality)
+            if(quality.strip()=='Upscale'):
                 self.create_subtle_upscale(page, True)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
