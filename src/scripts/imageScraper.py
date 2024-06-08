@@ -49,56 +49,42 @@ class ImageScraper:
             print("Date element not found")
             return None
         
-    def create_subtle_upscale(self, page, first_try):
-        # Find all instances of the specified class
-        elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
+    def create_subtle_upscale(self, page, first_try=True):
+        try:
+            # Find all instances of the specified class
+            elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
 
-        # Check if at least two elements are found
-        if len(elements) > 1:
-            # Select the second element
-            element = elements[1]
+            # Check if at least two elements are found
+            if len(elements) > 1:
+                element = elements[1]
+                subtle_button = element.query_selector("button")
 
-            # Attempt to click the first button inside the second element
-            first_button = element.query_selector("button")
-            
-            if first_button:
-                try:
-                    first_button.click()
-                    print("First button inside the second element was clicked.")
-                    
-                    # Wait for the indicator span to appear and have the text "1"
-                    page.wait_for_function("""
-                        (button) => {
-                            const span = button.querySelector('span.absolute');
-                            return span && span.innerText.trim() === '1';
-                        }
-                    """, first_button, timeout=5000)
-                    print("Waited for the indicator span to appear.")
-                    
-                    # Check for the indicator span inside the clicked button
-                    indicator = first_button.query_selector("span.absolute")
-                    print(f"Indicator element after wait: {indicator}")
-
-                    if indicator and  indicator.inner_text().strip() == "1":
-                        print("Image generation was successful. Indicator is still present.")
-                        return True  # Indicate success
-                    elif(first_try):
+                if subtle_button:
+                    subtle_button.click()
+                    page.wait_for_timeout(1000)  # Wait 1 second
+                    updated_subtle_button = element.query_selector("button")
+                    print(updated_subtle_button)
+                    span = updated_subtle_button.query_selector("span")
+                    if span:
+                        print('Subtle upscale successful')
+                    elif first_try:
+                        print("First attempt failed, retrying after 5 seconds...")
                         first_try = False
-                        page.wait_for_timeout(10000)  # Wait 10 seconds
-                        self.create_subtle_upscale(page, False)
+                        page.wait_for_timeout(5000)  # Wait 5 seconds
+                        return self.create_subtle_upscale(page, False)
                     else:
-                        print("Limit reached.")
+                        print("Limit reached. No more attempts.")
                         raise RuntimeError("Limit reached.")
-
-                except Exception as e:
-                    print(f"Failed to click the first button: {e}")
-                    raise
+                else:
+                    print("No button found inside the second element.")
+                    raise RuntimeError("No button found inside the second element.")
             else:
-                print("No button found inside the second element.")
-                raise RuntimeError("No button found inside the second element.")
-        else:
-            print("Less than two elements found.")
-            raise RuntimeError("Less than two elements found.")
+                print("Less than two elements found.")
+                raise RuntimeError("Less than two elements found.")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise
 
     @staticmethod
     def get_enhancement_level(page):
@@ -162,7 +148,7 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
-            time.sleep(random.uniform(2, 3))
+            time.sleep(random.uniform(.75, 1.5))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
