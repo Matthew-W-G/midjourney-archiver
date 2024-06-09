@@ -49,7 +49,7 @@ class ImageScraper:
             print("Date element not found")
             return None
         
-    def create_subtle_upscale(self, page, first_try=True):
+    def create_subtle_upscale(self, page):
         try:
             # Find all instances of the specified class
             elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
@@ -67,11 +67,6 @@ class ImageScraper:
                     span = updated_subtle_button.query_selector("span")
                     if span:
                         print('Subtle upscale successful')
-                    elif first_try:
-                        print("First attempt failed, retrying after 5 seconds...")
-                        first_try = False
-                        page.wait_for_timeout(5000)  # Wait 5 seconds
-                        return self.create_subtle_upscale(page, False)
                     else:
                         print("Limit reached. No more attempts.")
                         raise RuntimeError("Limit reached.")
@@ -132,8 +127,9 @@ class ImageScraper:
 
             quality = self.get_enhancement_level(page)
             print('quality', quality)
+            print('job_url', job_url)
             if(quality.strip()=='Upscale'):
-                self.create_subtle_upscale(page, True)
+                self.create_subtle_upscale(page)
             prompt_text = self.get_image_prompt(page)
             prompt_date = self.get_image_date(page)
 
@@ -149,7 +145,7 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
-            time.sleep(random.uniform(.75, 1.5))
+            time.sleep(random.uniform(2, 2.5))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
