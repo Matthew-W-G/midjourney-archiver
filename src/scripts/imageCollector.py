@@ -170,6 +170,7 @@ class ImageCollector:
                 print("Relax button clicked successfully.")
             else:
                 raise RuntimeError("Relax button not found inside parent div.")
+            button.click()
 
         except Exception as e:
             print(f"Error clicking relaxed button: {e}")
