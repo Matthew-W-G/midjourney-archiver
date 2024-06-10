@@ -87,6 +87,8 @@ class ImageCollector:
             page = context.new_page()
             page.goto('https://www.midjourney.com/archive')
             page.wait_for_timeout(4000)
+            
+            self.make_relaxed(page)
 
             print("Reached MidJourney archive page. Extracting images and information...")
             self.filter_upscale_only(page)
@@ -131,6 +133,47 @@ class ImageCollector:
             # Scroll down
             page.keyboard.press('ArrowDown')
             time.sleep(.001)
+
+    def make_relaxed(self, page):
+        try:
+            # Click the "Adjust your prompt's settings" button
+            button_selector = 'button[title="Adjust your prompt\'s settings"]'
+            button = page.query_selector(button_selector)
+            if button:
+                print("Found 'Adjust your prompt's settings' button. Clicking it.")
+                button.click()
+            else:
+                raise RuntimeError("Adjust settings button not found.")
+
+            # Wait for the container div to appear
+            parent_div_selector = (
+                'div.\\@\\[1440px\\]\\/settings\\:hidden.flex.group.flex-col.gap-3.flex-1.items-center.'
+                'justify-center.rounded-md'
+            )
+            page.wait_for_selector(parent_div_selector, timeout=5000)
+            parent_div = page.query_selector(parent_div_selector)
+            if parent_div:
+                print("Found parent div. Printing HTML:")
+                print(parent_div.inner_html())
+            else:
+                raise RuntimeError("Parent div not found.")
+
+            # Find and click the "Relax" button within the updated page context
+            relax_selector = (
+                'button.justify-center.min-w-12.select-none.items-center'
+                '.font-semibold.text-splash.bg-splash\\/20'
+            )
+            relax_button = parent_div.query_selector(relax_selector)
+            if relax_button:
+                print("Found 'Relax' button. Clicking it.")
+                relax_button.click()
+                print("Relax button clicked successfully.")
+            else:
+                raise RuntimeError("Relax button not found inside parent div.")
+
+        except Exception as e:
+            print(f"Error clicking relaxed button: {e}")
+            raise RuntimeError("Error occurred during clicking sequence.")
 
     def get_new_jobs(self, page):
         new_jobs = []

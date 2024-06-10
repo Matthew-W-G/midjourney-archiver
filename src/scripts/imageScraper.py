@@ -15,7 +15,7 @@ class ImageScraper:
 
 
     @staticmethod
-    def get_image_prompt( page):
+    def get_image_prompt(page):
         # Click the options button to open the submenu
         page.click('button[title="Options"]')
 
@@ -141,7 +141,7 @@ class ImageScraper:
             parts = job_url.split('/')
             id = parts[2].split('?')[0]
             if jpeg_src:
-                img_path = os.path.join(storage_folder, f'{id}.jpeg')
+                img_path = os.path.join(storage_folder, f'{id}.png')
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
