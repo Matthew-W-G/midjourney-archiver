@@ -88,8 +88,6 @@ class ImageCollector:
             page.goto('https://www.midjourney.com/archive')
             page.wait_for_timeout(4000)
             
-            self.make_relaxed(page)
-
             print("Reached MidJourney archive page. Extracting images and information...")
             self.filter_upscale_only(page)
             self.make_images_small(page)
