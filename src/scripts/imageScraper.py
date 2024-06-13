@@ -61,15 +61,21 @@ class ImageScraper:
 
                 if subtle_button:
                     subtle_button.click()
-                    page.wait_for_timeout(1500)  # Wait 1 second
+                    page.wait_for_timeout(1500)  # Wait 1.5 seconds
+
+                    # Check if there is a p tag element with the text "maximum number of jobs" or "fast hours"
+                    limit_reached = page.query_selector("p:text('maximum number of jobs')") or page.query_selector("p:text('fast hours')") or page.query_selector("p:text('failed to submit')") 
+                    if limit_reached:
+                        print("Limit reached. No more attempts.")
+                        raise RuntimeError("Limit reached.")
+
                     updated_subtle_button = element.query_selector("button")
-                    print(updated_subtle_button)
-                    span = updated_subtle_button.query_selector("span")
+                    span = updated_subtle_button.query_selector("span") if updated_subtle_button else None
                     if span:
                         print('Subtle upscale successful')
                     else:
-                        print("Limit reached. No more attempts.")
-                        raise RuntimeError("Limit reached.")
+                        print("Subtle upscale failed. No span found.")
+                        raise RuntimeError("Subtle upscale failed.")
                 else:
                     print("No button found inside the second element.")
                     raise RuntimeError("No button found inside the second element.")
@@ -145,14 +151,12 @@ class ImageScraper:
                 print(f"Saving image to: {img_path}")
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality)
-            time.sleep(random.uniform(2, 2.5))
+            time.sleep(random.uniform(.5, 1.5))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
             os.makedirs(self.download_folder)
         return self.download_folder
-            
-
 
     def add_image_to_db(self, image_id, prompt_date, prompt_text, url, download_path, quality):
         new_image = Image(image_id=image_id, prompt_date=prompt_date, prompt_text=prompt_text, url=url, download_path=download_path, enhancement_level=quality)
