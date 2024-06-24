@@ -1,32 +1,26 @@
 import sys
 import os
 import boto3
+import requests
 from pathlib import Path
 from botocore.exceptions import NoCredentialsError, ClientError
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
-import requests
 import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Add the src directory to the Python path
+# Add the src directory to the Python pat
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from flask_app import db
 from flask_app import create_app
 from flask_app.models import Image
 app = create_app()
 
-BUCKET_NAME = 'conformist-midjourney-bucket'
-BUCKET_REGION = 'us-east-2'
-
 # Load environment variables from .env file
 load_dotenv()
-
-# Initialize Flask app
-app = create_app()
 
 # Get AWS credentials from environment variables
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
@@ -74,7 +68,7 @@ def upload_to_s3(image):
 
     try:
         s3_filename = Path(local_filename).name  # Use filename instead of stem to keep the extension
-        s3_client.upload_file(local_filename, BUCKET_NAME, s3_filename, ExtraArgs={'ACL': 'public-read'})
+        s3_client.upload_file(local_filename, BUCKET_NAME, s3_filename)
         image.s3_url = f'https://{BUCKET_NAME}.s3.{BUCKET_REGION}.amazonaws.com/{quote_plus(s3_filename)}'
         db.session.commit()
         logger.info(f'The URL of the image will be: {image.s3_url}')
