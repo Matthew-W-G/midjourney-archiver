@@ -1,13 +1,11 @@
 import sys
 import os
 import boto3
-import requests
 from pathlib import Path
 from botocore.exceptions import NoCredentialsError, ClientError
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
-from flask_app import db, create_app
-from flask_app.models import Image
+import requests
 import logging
 
 # Configure logging
@@ -16,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 # Add the src directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from flask_app import db
+from flask_app import create_app
+from flask_app.models import Image
+app = create_app()
+
+BUCKET_NAME = 'conformist-midjourney-bucket'
+BUCKET_REGION = 'us-east-2'
 
 # Load environment variables from .env file
 load_dotenv()
