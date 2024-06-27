@@ -129,7 +129,7 @@ class ImageCollector:
             print('ch', client_height)
             print('sh', scroll_height)
             # Check if the bottom of the container has been reached
-            if scroll_top + client_height >= scroll_height:
+            if scroll_top + client_height >= (scroll_height-10):
                 return
 
             # Scroll down
