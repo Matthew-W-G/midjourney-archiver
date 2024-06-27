@@ -9,3 +9,4 @@ class Image(db.Model):
     download_path = db.Column(db.Text)
     enhancement_level = db.Column(db.Text)
     s3_url = db.Column(db.Text)
+    author = db.Column(db.Text)

@@ -2,6 +2,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -11,7 +14,7 @@ def create_app():
 
     # Basic configuration
     app.config['SECRET_KEY'] = 'dev'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://myflaskuser:password@localhost/myflaskdb'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql+psycopg2://postgres:{os.getenv('DB_PASSWORD')}@midjourney-db.crusowko6eee.us-east-2.rds.amazonaws.com/midjourney-db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
