@@ -125,13 +125,16 @@ class ImageCollector:
             client_height = page.evaluate('document.querySelector("#pageScroll").clientHeight')
             scroll_top = page.evaluate('document.querySelector("#pageScroll").scrollTop')
             
+            print('st', scroll_top)
+            print('ch', client_height)
+            print('sh', scroll_height)
             # Check if the bottom of the container has been reached
             if scroll_top + client_height >= scroll_height:
                 return
 
             # Scroll down
             page.keyboard.press('ArrowDown')
-            time.sleep(.001)
+            time.sleep(.0001)
 
     def make_relaxed(self, page):
         try:
