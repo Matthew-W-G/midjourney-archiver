@@ -184,7 +184,7 @@ class ImageScraper:
                 download_path = self.download_image(jpeg_src, img_path, headers, cookies_dict)
                 s3_url = self.upload_image_s3(download_path)
             self.add_image_to_db(id, prompt_date, prompt_text, jpeg_src, download_path, quality, s3_url)
-            time.sleep(random.uniform(.5, 1.5))
+            time.sleep(random.uniform(10, 12.5))
 
     def get_downloads_folder(self):
         if not os.path.exists(self.download_folder):
