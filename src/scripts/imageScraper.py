@@ -54,7 +54,7 @@ class ImageScraper:
     def create_subtle_upscale(self, page):
         try:
             # Find all instances of the specified class
-            elements = page.query_selector_all("div.flex-wrap.grid.grid-cols-2.w-full.shrink.flex.items-center.justify-start.gap-1\\.5.max-w-full")
+            elements = page.query_selector_all("div.flex.group\/group.col-span-2.gap-y-3.lg\:flex-row.items-start.justify-start.gap-1\.5.max-w-full.pt-2\.5")
 
             # Check if at least two elements are found
             if len(elements) > 1:
